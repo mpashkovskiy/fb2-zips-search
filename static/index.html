@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap-icons.min.css" rel="stylesheet">
+    <script src="bootstrap.bundle.min.js"></script>
+    <title>FB2 zips search</title>
+</head>
+
+<body>
+    <script src="mithril.min.js"></script>
+    <script type="text/javascript">
+        var basePath = "/api/books";
+        function search() {
+            var searchString = document.getElementById("search").value;
+            var resultList = document.getElementById("result");
+
+            m.request(`${basePath}?search=` + searchString)
+                .then(books => m.render(resultList, books.map(book => {
+                    var href = `${basePath}/${book.archive}/${book.file_name}`;
+                    return m("li.lh-lg", [
+                        book.authors,
+                        ", ",
+                        m("a", { href, target: "_blank" }, `${book.title}`),
+                        ` (${book.lang})`,
+                    ])
+                })))
+        }
+        function clean() {
+            var resultList = document.getElementById("result");
+            m.render(resultList, []);
+
+            document.getElementById("search").value = "";
+        }
+    </script>
+    <div class="container">
+        <div class="row">
+            <div class="col mt-3 mb-4">
+                <div class="input-group mb-4">
+                    <button onclick="javascript:clean()" class="btn btn-outline-secondary"><i
+                            class="bi bi-x-lg"></i></button>
+                    <input class="form-control" id="search" placeholder="Search"
+                        onkeypress="if (event.keyCode == 13) search()">
+                    <button onclick="javascript:search()" class="btn btn-primary">Search</button>
+                </div>
+                <ul id="result"></ul>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
