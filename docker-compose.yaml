@@ -6,5 +6,5 @@ services:
     ports:
       - "8000:8000"
     # volumes:
-    #   - /dev/mnt/data/books:/app/books
+    #   - /dev/mnt/data/books:/app/books:ro
     restart: unless-stopped
