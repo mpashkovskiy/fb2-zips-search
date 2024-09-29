@@ -1,5 +1,6 @@
 __pycache__
 books
 unzipped_inpx
+.DS_Store
 index-raw.json
 index.json
