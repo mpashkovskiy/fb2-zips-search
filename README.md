@@ -2,6 +2,7 @@
 
 TL;DR
 
+- unzip `index.json.zip`
 - modify volumes configuration in `docker-compose.yaml` to point to folder with FB2 zip files
 - run `docker compose up -d`
 - open `http://localhost:8000` in browser

@@ -1,24 +1,14 @@
-import re
 import zipfile
+import json
 from typing import Callable
 
-import numpy as np
-import pandas as pd
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
 
-INDEX_PATH = "index.json.zip"
+INDEX_PATH = "index.json"
 ARCHIVES_PATH = "./books"
-df = (
-    pd
-    .read_json(INDEX_PATH, orient="records")
-    .dropna(subset=["authors"])
-    .query("lang in ['ru', 'en', 'fi']")
-    [["authors", "title", "lang", "archive", "file_name"]]
-)
-df['authors'] = df['authors'].apply(", ".join)
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -57,14 +47,13 @@ async def books(search: str = None):
     if search is None:
         return []
 
-    mask = np.column_stack([
-        df[col].str.contains(re.compile(
-            search.strip(),
-            flags=re.IGNORECASE
-        ), na=False)
-        for col in ["authors", "title"]
-    ])
-    return df.loc[mask.any(axis=1)].to_dict(orient="records")
+    with open(INDEX_PATH, "r") as file:
+        res = [
+            line[:-2]
+            for line in file
+            if search.lower() in line.lower()
+        ]
+    return json.loads("[" + ", ".join(res) + "]")
 
 
 @app.get("/api/books/{archive}/{file_name}")
