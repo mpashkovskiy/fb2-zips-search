@@ -1,5 +1,6 @@
 import zipfile
 import json
+import sqlite3 as db
 from typing import Callable
 
 from fastapi import FastAPI, Request
@@ -12,6 +13,7 @@ ARCHIVES_PATH = "./books"
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+con = db.connect('books.db')
 
 
 @app.middleware("http")
@@ -47,13 +49,20 @@ async def books(search: str = None):
     if search is None:
         return []
 
-    with open(INDEX_PATH, "r") as file:
-        res = [
-            line[:-2]
-            for line in file
-            if search.lower() in line.lower()
-        ]
-    return json.loads("[" + ", ".join(res) + "]")
+    search = search.strip()
+    q = (
+        "SELECT * "
+        "FROM books "
+        "WHERE "
+        f"(lower(title) LIKE lower('%{search}%') "
+        f"OR lower(authors) LIKE lower('%{search}%')) "
+        "AND lang IN ('ru', 'en', 'fi')"
+    )
+    fields = ["authors", "title", "lang", "archive", "file_name"]
+    return [
+        dict(zip(fields, row))
+        for row in con.execute(q).fetchall()
+    ]
 
 
 @app.get("/api/books/{archive}/{file_name}")
